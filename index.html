@@ -2,266 +2,474 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="GenAI Privacy Risk Triage PoC: spec → legal risk triage with evidence-ready outputs and HITL routing (CIPA/VPPA/BIPA)." />
+
+  <!-- Optional: reduce search indexing while still accessible via direct link -->
+  <!-- <meta name="robots" content="noindex, nofollow" /> -->
+
+  <meta property="og:title" content="GenAI Privacy Risk Triage PoC" />
+  <meta property="og:description" content="Spec → legal risk triage in minutes, with evidence-ready outputs & HITL routing (CIPA/VPPA/BIPA)." />
+  <meta property="og:type" content="website" />
+
   <title>GenAI Privacy Risk Triage PoC</title>
+
   <style>
-    :root {
-      --text: #111;
-      --muted: #555;
-      --border: #e6e6e6;
-      --bg: #ffffff;
-      --chip: #f6f6f6;
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#4b5563;
+      --muted2:#6b7280;
+      --line:#e5e7eb;
+      --chip:#f3f4f6;
+      --card:#ffffff;
+      --shadow: 0 6px 24px rgba(0,0,0,.06);
+      --radius: 14px;
+      --link:#0b57d0;
+      --accent:#111827;
     }
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-      line-height: 1.5;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.55;
     }
-    .container {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:980px; margin:0 auto; padding:28px 18px 70px}
+    .topbar{
+      position:sticky; top:0;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:saturate(180%) blur(8px);
+      border-bottom:1px solid var(--line);
+      z-index:10;
     }
-    header h1 {
-      font-size: 34px;
-      margin: 0 0 6px;
-      letter-spacing: -0.2px;
+    .topbar .inner{max-width:980px; margin:0 auto; padding:10px 18px; display:flex; gap:12px; align-items:center; justify-content:space-between}
+    .brand{
+      display:flex; gap:10px; align-items:center; min-width:0;
     }
-    header .subtitle {
-      font-size: 16px;
-      color: var(--muted);
-      margin: 0 0 14px;
+    .mark{
+      width:34px; height:34px; border-radius:10px;
+      background:var(--chip);
+      border:1px solid var(--line);
+      display:grid; place-items:center;
+      flex:0 0 auto;
     }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 10px 0 18px;
+    .brand .t{
+      min-width:0;
     }
-    .chip {
-      background: var(--chip);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 13px;
-      color: #222;
+    .brand .title{
+      font-weight:800;
+      letter-spacing:-.3px;
+      font-size:14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .grid {
-      display: grid;
+    .brand .sub{
+      font-size:12px;
+      color:var(--muted2);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    nav a{
+      font-size:12px;
+      color:var(--muted);
+      margin-left:10px;
+    }
+    nav a:hover{color:var(--text); text-decoration:none}
+    .hero{
+      padding-top:22px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:38px;
+      letter-spacing:-.7px;
+      line-height:1.1;
+    }
+    .lead{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:16px;
+      max-width:82ch;
+    }
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 14px}
+    .chip{
+      border:1px solid var(--line);
+      background:var(--chip);
+      color:#111;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+    }
+    .cta{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 18px}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+      color:var(--text);
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .btn:hover{text-decoration:none; border-color:#cfd6e0}
+    .btn.primary{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+    }
+    .btn.primary:hover{opacity:.92}
+    .grid{
+      display:grid;
       grid-template-columns: 1fr;
-      gap: 14px;
-      margin: 18px 0 26px;
+      gap:14px;
+      margin-top:14px;
     }
-    @media (min-width: 860px) {
-      .grid { grid-template-columns: 1fr 1fr; }
+    @media (min-width: 900px){
+      .grid{grid-template-columns: 1.2fr .8fr;}
     }
-    .card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 16px 14px;
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px 16px 14px;
+      box-shadow: var(--shadow);
     }
-    .card h2 {
-      font-size: 16px;
-      margin: 0 0 10px;
-      letter-spacing: -0.1px;
+    .card h2{
+      margin:0 0 10px;
+      font-size:15px;
+      letter-spacing:-.2px;
     }
-    .card p, .card li {
-      font-size: 14px;
-      margin: 0;
-      color: #222;
-    }
-    ul { margin: 10px 0 0 18px; }
-    .section {
-      border-top: 1px solid var(--border);
-      padding-top: 22px;
-      margin-top: 22px;
-    }
-    .section h2 {
-      font-size: 18px;
-      margin: 0 0 10px;
-      letter-spacing: -0.1px;
-    }
-    .kpi {
-      display: grid;
+    .card p, .card li{font-size:14px; color:#111}
+    .muted{color:var(--muted)}
+    ul{margin:8px 0 0 18px}
+    .kpis{
+      display:grid;
       grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 10px;
+      gap:10px;
+      margin-top:10px;
     }
-    @media (min-width: 860px) {
-      .kpi { grid-template-columns: 1fr 1fr 1fr; }
+    @media (min-width: 900px){
+      .kpis{grid-template-columns: 1fr 1fr;}
     }
-    .kpi .box {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 12px 10px;
+      background:#fff;
     }
-    .kpi .label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 4px;
+    .kpi .label{font-size:12px; color:var(--muted2); margin-bottom:4px}
+    .kpi .val{font-size:18px; font-weight:800; letter-spacing:-.3px}
+    .note{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted2);
     }
-    .kpi .value {
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.2px;
+    .section{
+      margin-top:22px;
+      padding-top:22px;
+      border-top:1px solid var(--line);
     }
-    .callout {
-      border-left: 4px solid #111;
-      padding: 10px 12px;
-      background: #fafafa;
-      margin: 12px 0 0;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #222;
+    .section h2{
+      margin:0 0 10px;
+      font-size:18px;
+      letter-spacing:-.25px;
     }
-    a { color: #0b57d0; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .links a { display: inline-block; margin-right: 14px; }
-    footer {
-      margin-top: 28px;
-      color: var(--muted);
-      font-size: 12px;
+    .flow{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
     }
-    code {
-      background: #f3f3f3;
-      padding: 2px 6px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 12px;
+    @media (min-width: 900px){
+      .flow{grid-template-columns: 1fr 1fr 1fr;}
+    }
+    .step{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+    }
+    .step .n{
+      display:inline-block;
+      font-size:12px;
+      background:var(--chip);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 8px;
+      margin-bottom:8px;
+    }
+    .callout{
+      margin-top:12px;
+      background:#fafafa;
+      border:1px solid var(--line);
+      border-left:4px solid #111;
+      border-radius:12px;
+      padding:12px;
+      font-size:14px;
+      color:#111;
+    }
+    .asset{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+    }
+    .asset a{font-size:14px}
+    .imgbox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow: var(--shadow);
+    }
+    .imgbox img{display:block; width:100%; height:auto}
+    .video{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:#000;
+      box-shadow: var(--shadow);
+    }
+    .video iframe{display:block; width:100%; aspect-ratio:16/9; border:0}
+    footer{
+      margin-top:26px;
+      color:var(--muted2);
+      font-size:12px;
+    }
+    code{
+      background:#f3f4f6;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:2px 6px;
+      font-size:12px;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">
+          <!-- simple inline icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3l9 4.5-9 4.5-9-4.5L12 3Z" stroke="#111827" stroke-width="1.6"/>
+            <path d="M3 12l9 4.5 9-4.5" stroke="#111827" stroke-width="1.6"/>
+            <path d="M3 16.5l9 4.5 9-4.5" stroke="#111827" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div class="t">
+          <div class="title">GenAI Privacy Risk Triage PoC</div>
+          <div class="sub">Public (non-confidential) summary • Personal project</div>
+        </div>
+      </div>
+      <nav aria-label="Primary">
+        <a href="#overview">Overview</a>
+        <a href="#evaluation">Evaluation</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#demo">Demo</a>
+        <a href="#links">Links</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero" id="overview">
       <h1>GenAI Privacy Risk Triage PoC</h1>
-      <p class="subtitle">
-        Early-stage spec &rarr; legal risk triage in minutes, with evidence-ready outputs and Human-in-the-Loop (HITL) routing.
+      <p class="lead">
+        Turn early-stage software specs into <b>actionable privacy risk triage</b> in minutes —
+        with <b>evidence-ready outputs</b> and <b>Human-in-the-Loop</b> routing to reduce legal review bottlenecks.
       </p>
 
       <div class="chips">
         <span class="chip">CIPA</span>
         <span class="chip">VPPA</span>
         <span class="chip">BIPA</span>
-        <span class="chip">Audit-style evidence</span>
-        <span class="chip">Conservative routing (HITL)</span>
-        <span class="chip">Designed for scale</span>
+        <span class="chip">Audit-style evidence packaging</span>
+        <span class="chip">Conservative HITL escalation</span>
+        <span class="chip">Designed for repeatable adoption</span>
+      </div>
+
+      <div class="cta">
+        <a class="btn primary" href="SolutionBrief.pdf" aria-label="Download solution brief PDF">Solution Brief (PDF)</a>
+        <a class="btn" href="#demo" aria-label="Jump to demo section">90-sec Demo</a>
+        <a class="btn" href="https://www.linkedin.com/in/junya-obara/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       </div>
 
       <div class="grid">
         <div class="card">
-          <h2>Problem (Why it matters)</h2>
-          <p>
-            Privacy risks are often discovered late (after requirements freeze), causing expensive rework and legal review bottlenecks.
-            Teams need a fast, repeatable way to surface high-risk items early and package evidence for review.
-          </p>
+          <h2>What it does</h2>
+          <ul>
+            <li><b>Issue spotting:</b> flags privacy risk items per law (CIPA/VPPA/BIPA).</li>
+            <li><b>Routing:</b> <code>BLOCKER</code> / <code>NEEDS_REVIEW</code> / <code>CLEARED</code> with conservative thresholds.</li>
+            <li><b>Evidence packaging:</b> structured audit-style JSON with references to relevant legal text chunks.</li>
+            <li><b>Remediation:</b> suggests requirement changes (final decision stays human/legal).</li>
+          </ul>
+
+          <div class="callout">
+            <b>GTM angle:</b> This is built as a repeatable motion—fast triage, clear outputs, and predictable review workload—so teams can scale adoption with consistent quality.
+          </div>
         </div>
 
         <div class="card">
-          <h2>What this PoC delivers</h2>
-          <ul>
-            <li><b>Risk triage:</b> flags high-risk items and summarizes issues per law.</li>
-            <li><b>Routing:</b> <code>BLOCKER / NEEDS_REVIEW / CLEARED</code> with conservative HITL escalation.</li>
-            <li><b>Evidence-ready output:</b> audit-log style structured JSON and citations to relevant legal text chunks.</li>
-            <li><b>Recommendations:</b> suggests requirement changes to reduce risk (final decision remains human).</li>
-          </ul>
+          <h2>Why it matters</h2>
+          <p class="muted">
+            Privacy risks found late can trigger rework, delays, and costly legal escalations.
+            This PoC targets earlier detection at the spec stage and makes downstream review more efficient.
+          </p>
+
+          <div class="kpis" style="margin-top:12px">
+            <div class="kpi">
+              <div class="label">Output style</div>
+              <div class="val">Audit-ready</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Review model</div>
+              <div class="val">HITL-first</div>
+            </div>
+          </div>
+
+          <p class="note">
+            This page contains no employer confidential info. It is a public summary of a personal PoC.
+          </p>
         </div>
       </div>
-    </header>
+    </section>
 
-    <div class="section">
-      <h2>How it works (repeatable motion)</h2>
-      <ul>
-        <li><b>Input:</b> software requirement/spec text (SRS/PRD fragments).</li>
-        <li><b>Processing:</b> identify risk patterns per law, request missing evidence, and apply conservative thresholds.</li>
-        <li><b>Output:</b> structured findings + evidence package + recommended requirement changes.</li>
-        <li><b>Operational design:</b> ambiguous items are routed to HITL to minimize false negatives on high-risk items.</li>
-      </ul>
-      <div class="callout">
-        <b>GTM framing:</b> the goal is not “perfect accuracy,” but an evaluation framework that balances
-        <b>regulatory risk</b> (avoid missing high-risk items) and <b>review workload</b> (reduce unnecessary human review).
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Evaluation (replace with your measured results)</h2>
-      <p style="color:#222;font-size:14px;margin:0 0 8px;">
-        Planned metrics are designed for operational usefulness: high-risk recall, overall precision, and HITL review workload.
+    <section class="section" id="evaluation">
+      <h2>Evaluation (replace with measured results)</h2>
+      <p class="muted" style="margin:0">
+        Metrics are chosen for operational usefulness (not just “accuracy”): avoid missing high-risk items, and reduce unnecessary human review.
       </p>
-      <div class="kpi">
-        <div class="box">
+
+      <div class="kpis" style="margin-top:12px">
+        <div class="kpi">
           <div class="label">Test set size</div>
-          <div class="value">N = XX specs</div>
+          <div class="val">N = XX specs</div>
         </div>
-        <div class="box">
+        <div class="kpi">
           <div class="label">High-risk recall</div>
-          <div class="value">XX%</div>
+          <div class="val">XX%</div>
         </div>
-        <div class="box">
+        <div class="kpi">
+          <div class="label">Overall precision</div>
+          <div class="val">XX%</div>
+        </div>
+        <div class="kpi">
           <div class="label">HITL workload reduction</div>
-          <div class="value">YY%</div>
+          <div class="val">YY%</div>
         </div>
       </div>
-      <p style="margin:10px 0 0;color:var(--muted);font-size:12px;">
-        Note: replace <code>XX</code>/<code>YY</code> with measured values after running your evaluation.
-      </p>
-    </div>
 
-    <div class="section">
-      <h2>Target AWS architecture</h2>
-      <ul>
-        <li><b>Reasoning:</b> Amazon Bedrock (foundation model inference).</li>
-        <li><b>Orchestration:</b> AWS Step Functions (multi-round reasoning + stop conditions + HITL routing).</li>
-        <li><b>Audit logs:</b> Amazon S3 (structured outputs, evidence references, traceability).</li>
-      </ul>
-      <p style="margin:10px 0 0;color:var(--muted);font-size:12px;">
-        This page contains no confidential product details. Architecture is presented at reference level.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>Demo video</h2>
-      <p style="margin:0 0 10px;color:#222;font-size:14px;">
-        Add your 90-sec demo video here (YouTube unlisted). Until then, this section can remain as a placeholder.
-      </p>
       <div class="callout">
-        When your video is ready, replace <code>YOUR_VIDEO_ID</code> below.
-        Example: <code>https://www.youtube.com/watch?v=ABC123</code> &rarr; video ID is <code>ABC123</code>.
+        <b>How to present this in interviews:</b>
+        “I optimized for <b>high-risk recall</b> (minimize false negatives) and managed review workload via <b>conservative HITL routing</b>.”
       </div>
-      <div style="margin-top:12px;">
-        <iframe width="560" height="315"
+
+      <p class="note">
+        Tip: once you have numbers, add one line describing the dataset composition (e.g., CIPA/VPPA/BIPA split) and labeling approach.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>How it works (repeatable motion)</h2>
+      <div class="flow" role="list">
+        <div class="step" role="listitem">
+          <div class="n">Step 1</div>
+          <b>Input</b>
+          <p class="muted">Requirement/spec text (SRS/PRD fragments)</p>
+        </div>
+        <div class="step" role="listitem">
+          <div class="n">Step 2</div>
+          <b>Triage</b>
+          <p class="muted">Law-specific risk patterns + evidence checks + conservative thresholds</p>
+        </div>
+        <div class="step" role="listitem">
+          <div class="n">Step 3</div>
+          <b>Output</b>
+          <p class="muted">Structured findings + evidence package + remediation suggestions + HITL routing</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <h2>Target AWS architecture (reference level)</h2>
+      <ul>
+        <li><b>Reasoning:</b> Amazon Bedrock (foundation model inference)</li>
+        <li><b>Orchestration:</b> AWS Step Functions (multi-step flow + stop conditions + HITL routing)</li>
+        <li><b>Auditability:</b> Amazon S3 (structured outputs, logs, traceability)</li>
+      </ul>
+
+      <p class="note">
+        If you add an image named <code>architecture.png</code> in the repo root, it will show below automatically.
+      </p>
+
+      <div class="imgbox" style="margin-top:12px">
+        <img src="architecture.png" alt="Target AWS reference architecture diagram for GenAI Privacy Risk Triage PoC (Bedrock, Step Functions, S3 audit logs)" onerror="this.style.display='none';" />
+      </div>
+    </section>
+
+    <section class="section" id="demo">
+      <h2>Demo (90-sec)</h2>
+      <p class="muted" style="margin:0 0 10px">
+        Add your YouTube unlisted video when ready. Until then, keep this as a placeholder.
+      </p>
+
+      <div class="callout">
+        Replace <code>YOUR_VIDEO_ID</code> below.
+        Example: <code>https://www.youtube.com/watch?v=ABC123</code> → video ID is <code>ABC123</code>.
+      </div>
+
+      <div class="video" style="margin-top:12px">
+        <iframe
+          id="yt"
           src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-          frameborder="0"
+          title="GenAI Privacy Risk Triage PoC demo video"
           allowfullscreen>
         </iframe>
       </div>
-    </div>
 
-    <div class="section">
-      <h2>Links</h2>
-      <p class="links" style="margin:0;font-size:14px;">
-        <a href="SolutionBrief.pdf">1-page Solution Brief (PDF)</a>
-        <a href="https://www.linkedin.com/in/junya-obara/">LinkedIn</a>
+      <p class="note">
+        If your company blocks YouTube, also add a downloadable MP4 link (only if non-confidential).
       </p>
-      <p style="margin:10px 0 0;color:var(--muted);font-size:12px;">
+    </section>
+
+    <section class="section" id="links">
+      <h2>Links</h2>
+      <div class="asset">
+        <a class="btn primary" href="SolutionBrief.pdf">Download 1-page Solution Brief (PDF)</a>
+        <a class="btn" href="mailto:YOUR_EMAIL_HERE">Contact (Email)</a>
+        <a class="btn" href="https://www.linkedin.com/in/junya-obara/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <p class="note">
         Optional: add a public repo link only if it contains no confidential information.
       </p>
-    </div>
+    </section>
 
     <footer>
       © Junya Obara — GenAI Privacy Risk Triage PoC (public summary). Last updated: <span id="d"></span>
     </footer>
-  </div>
+  </main>
 
   <script>
-    // Auto-fill a human-friendly date stamp
+    // date stamp
     const el = document.getElementById("d");
     if (el) {
       const dt = new Date();
       el.textContent = dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+    }
+
+    // Hide YouTube embed if placeholder is not replaced (avoid showing a broken player)
+    const yt = document.getElementById("yt");
+    if (yt && yt.src.includes("YOUR_VIDEO_ID")) {
+      yt.parentElement.style.display = "none";
+      const p = document.createElement("p");
+      p.className = "note";
+      p.textContent = "Demo video will be added here (YouTube unlisted).";
+      const demo = document.getElementById("demo");
+      demo.appendChild(p);
     }
   </script>
 </body>
