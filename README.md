@@ -1,7 +1,4 @@
-# First-Pass Privacy Compliance Review 
-# using Amazon Bedrock Knowledge Bases
-
-
+# First-Pass Privacy Compliance Review
 
 Personal project. Public, non-confidential summary.
 
