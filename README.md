@@ -1,4 +1,4 @@
-# First-Pass Privacy Compliance Review
+# GenAI First-Pass Privacy Compliance Review PoC
 
 Personal project. Public, non-confidential summary.
 
