@@ -1,4 +1,6 @@
-# GenAI Privacy Risk Triage PoC
+# First-Pass Privacy Compliance Review using Amazon Bedrock Knowledge Bases
+
+
 
 Personal project. Public, non-confidential summary.
 
